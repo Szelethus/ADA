@@ -74,5 +74,5 @@ procedure Chicken_Feeding_Demo is
 	end Girl;
 
 begin
-	null;
+	pause;
 end Chicken_Feeding_Demo;
