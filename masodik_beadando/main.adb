@@ -59,17 +59,19 @@ procedure Main is
 			return Ret;
 		end Wait_Time;
 		
+		Stopped : Boolean := False;
+		
 	begin
-		--select
-		--	accept Stop do
-		--		terminate;
-		--	end Stop;
-		--else
-			for I in 1..3 loop
+		while not Stopped loop
+			select
+				accept Stop do
+					Stopped := True;
+				end Stop;
+			or
 				delay Wait_Time(Lamp.Color);
 				Lamp.Switch;
-			end loop;
-		--end select;
+			end select;
+		end loop;
 	end Controller;
 	
 	type String_Access is access String;
@@ -103,6 +105,6 @@ begin
 		delay 0.5; 
 		VA := new Vehlice( new String'("ABC"), new Duration'(1.0) );
 	end loop;
-	--Skip_Line;
+	Skip_Line;
 	Controller.Stop;
 end Main;
