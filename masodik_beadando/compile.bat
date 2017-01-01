@@ -1,2 +1,2 @@
-gnatmake -o beadando.exe *adb
+gnatmake -o beadando.exe main.adb
 beadando.exe

@@ -16,9 +16,10 @@ procedure Main is
 		Current_Color : Lamp_Color := Red;
 	end Lamp;
 	
-	task Crossroad is
+	protected Crossroad is
 		entry Cross(Cross_Time : Duration_Access; License_Plate_Number : String_Access);
-		entry Wake_Up;
+		procedure Wake_Up;
+		function Get_Cross_Count return Natural;
 	end Crossroad;
 	
 	task type Signal;
@@ -78,6 +79,7 @@ procedure Main is
 			select
 				accept Stop do
 					Stopped := True;
+					Put_Line("Kontroller kikapcsolva.");
 				end Stop;
 			or
 				delay Wait_Time(Lamp.Color);
@@ -89,45 +91,42 @@ procedure Main is
 	task type Vehlice (License_Plate_Number : String_Access);
 	
 	task body Vehlice is
-		Is_Accepted : Boolean := false;
 		Cross_Time : Duration := 1.0;
+		Has_Crossed : Boolean := False;
 	begin
 		Put_Line("Auto " & License_Plate_Number.all & " rendszammal a lampahoz ert!");
-		while not Is_Accepted loop
+		while not Has_Crossed loop
 			select 
 				Crossroad.Cross(new Duration'(Cross_Time), License_Plate_Number);
-				Is_Accepted := true;
-			or
-				delay 0.2;
+				Has_Crossed := True;
+			else
 				Cross_Time := 3.0;
-				--Put_Line("Auto " & License_Plate_Number.all & " rendszammal a lampanal var.");
 			end select;
 		end loop;
 	end Vehlice;
 	
-	type Vehlice_Access is access Vehlice;
+	protected body Crossroad is
 	
-	VA : Vehlice_Access;
-	
-	task body Crossroad is
-		Is_Woken_Up : Boolean := False;
-	begin
-		loop
-			select
-				when not Is_Woken_Up => accept Wake_Up 
-					do
-						Is_Woken_Up := True;
-					end Wake_Up;
-				or when Is_Woken_Up and then Lamp.Color = Green => accept Cross(Cross_Time : Duration_Access; License_Plate_Number : String_Access)
-					do
-						delay Cross_Time.all;
-						Put_Line("Auto " & License_Plate_Number.all & " rendszammal a athaladt!");
-					end Cross;
-				or
-					delay 0.1;
-			end select;
-		end loop;
+		procedure Wake_Up is
+		begin
+			null;
+		end Wake_Up;
+		
+		entry Cross(Cross_Time : Duration_Access; License_Plate_Number : String_Access) when Lamp.Color = Green is
+		begin
+			delay Cross_Time.all;
+			Put_Line("Auto " & License_Plate_Number.all & " rendszammal a athaladt!");
+		end Cross;
+		
+		function Get_Cross_Count return Natural is
+		begin
+			return Cross'Count;
+		end Get_Cross_Count;
+		
 	end Crossroad;
+	
+	type Vehlice_Access is access Vehlice;
+	VA : Vehlice_Access;
 	
 begin
 	for I in 1..10 loop
