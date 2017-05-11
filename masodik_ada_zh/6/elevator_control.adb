@@ -164,5 +164,7 @@ procedure Elevator_Control is
 	
 begin
 	delay 5.0;
-	Motor.Command(Power_Off);
+	if not Motor'Terminated then
+	   Motor.Command(Power_Off);
+	end if;
 end Elevator_Control;
